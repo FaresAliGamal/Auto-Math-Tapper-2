@@ -1,46 +1,62 @@
-
 package com.math.autotapper2
 
+/**
+ * Evaluates expressions containing integers and + - * / with correct precedence.
+ * Supports symbols: x (multiply) and ÷ (divide) by mapping to * and /.
+ */
 object MathEngine {
-    // Simple expression evaluator supporting + - * / with proper precedence.
     fun evaluate(expr: String): Double {
         val s = expr.replace("x", "*").replace("÷", "/")
         return evaluateBasic(s)
     }
 
     private fun evaluateBasic(expr: String): Double {
-        // Shunting-yard to RPN
-        val output = ArrayDeque<String>()
+        // Shunting-yard to RPN (Reverse Polish Notation)
+        val output = mutableListOf<String>()
         val ops = ArrayDeque<Char>()
-        fun prec(c: Char) = when (c) { '+','-' -> 1; '*','/' -> 2; else -> -1 }
+
+        fun prec(c: Char) = when (c) {
+            '+', '-' -> 1
+            '*', '/' -> 2
+            else -> -1
+        }
 
         var i = 0
         while (i < expr.length) {
             val c = expr[i]
-            if (c.isDigit()) {
-                val sb = StringBuilder()
-                var k = i
-                while (k < expr.length && expr[k].isDigit()) { sb.append(expr[k]); k++ }
-                output.addLast(sb.toString())
-                i = k - 1
-            } else if (c in charArrayOf('+','-','*','/')) {
-                while (ops.isNotEmpty() && prec(ops.peek()) >= prec(c)) {
-                    output.addLast(ops.pop().toString())
+            when {
+                c.isWhitespace() -> { /* skip */ }
+                c.isDigit() -> {
+                    val sb = StringBuilder()
+                    var k = i
+                    while (k < expr.length && expr[k].isDigit()) {
+                        sb.append(expr[k]); k++
+                    }
+                    output.add(sb.toString())
+                    i = k - 1
                 }
-                ops.push(c)
+                c in charArrayOf('+','-','*','/') -> {
+                    while (ops.isNotEmpty() && prec(ops.last()) >= prec(c)) {
+                        output.add(ops.removeLast().toString())
+                    }
+                    ops.addLast(c)
+                }
+                else -> {
+                    // ignore unsupported chars safely
+                }
             }
             i++
         }
-        while (ops.isNotEmpty()) output.addLast(ops.pop().toString())
+        while (ops.isNotEmpty()) output.add(ops.removeLast().toString())
 
+        // Evaluate RPN
         val st = ArrayDeque<Double>()
-
         for (tok in output) {
             if (tok.length > 1 || tok[0].isDigit()) {
-                st.push(tok.toDouble())
+                st.addLast(tok.toDouble())
             } else {
-                val b = st.pop()
-                val a = st.pop()
+                val b = st.removeLast()
+                val a = st.removeLast()
                 val r = when (tok[0]) {
                     '+' -> a + b
                     '-' -> a - b
@@ -48,9 +64,9 @@ object MathEngine {
                     '/' -> a / b
                     else -> 0.0
                 }
-                st.push(r)
+                st.addLast(r)
             }
         }
-        return st.pop()
+        return st.removeLast()
     }
 }
