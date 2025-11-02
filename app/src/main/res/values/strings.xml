@@ -7,4 +7,6 @@
     <string name="upload_symbols">Upload Symbols</string>
     <string name="pick_roi">Pick ROI</string>
     <string name="status_ready">Ready</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

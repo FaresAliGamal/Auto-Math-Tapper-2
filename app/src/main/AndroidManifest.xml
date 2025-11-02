@@ -24,6 +24,7 @@
         </activity>
 
         <service
+        <activity android:name=".PickRoiActivity" android:exported="false"/>
             android:name=".AutoTapService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">
